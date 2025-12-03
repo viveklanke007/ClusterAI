@@ -6,13 +6,11 @@ import { verifyToken } from "../../../../lib/auth";
 export async function POST(req) {
   try {
     await connectDB();
-
     const { token } = await req.json();
-    if (!token) {
-      return NextResponse.json({ error: "Token missing" }, { status: 400 });
-    }
 
     const user = verifyToken(token);
+    if (!user)
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     await History.deleteMany({ userId: user.id });
 

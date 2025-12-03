@@ -32,10 +32,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden px-4">
       {/* Back lights */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-400/20 blur-[180px] rounded-full animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-cyan-400/20 blur-[200px] rounded-full animate-pulse"></div>
+      <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-purple-400/20 blur-[120px] md:blur-[180px] rounded-full animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-cyan-400/20 blur-[120px] md:blur-[200px] rounded-full animate-pulse"></div>
 
       {/* Particles */}
       <div className="absolute inset-0 -z-10">
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-gray-800/60 backdrop-blur-xl p-8 rounded-2xl border border-gray-700 shadow-2xl"
       >
-        <h2 className="text-4xl font-extrabold text-center bg-gradient-to-r from-purple-400 to-cyan-400 text-transparent bg-clip-text">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-center bg-gradient-to-r from-purple-400 to-cyan-400 text-transparent bg-clip-text">
           Create Account
         </h2>
 

@@ -30,25 +30,19 @@ export default function Assistant() {
     setLoading(true);
 
     try {
-      // 🔥 CALL OLLAMA API
-      const res = await fetch("http://localhost:11434/generate", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "llama3", // change if you want other model
-          prompt: promptNow,
-          stream: false,
-        }),
+        body: JSON.stringify({ prompt: promptNow }),
       });
 
       const data = await res.json();
-      const aiResponse = data.response || "No response.";
+      const aiResponse = data.response;
 
       const aiMsg = { role: "assistant", text: aiResponse };
       setMessages((prev) => [...prev, aiMsg]);
       scrollBottom();
 
-      // save to history
       await fetch("/api/history/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,10 +57,7 @@ export default function Assistant() {
       console.error(err);
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          text: "⚠️ Unable to reach AI engine.",
-        },
+        { role: "assistant", text: "⚠️ Gemini API not reachable." },
       ]);
     }
 
@@ -75,21 +66,24 @@ export default function Assistant() {
   };
 
   return (
-    <div className="flex">
+    // RESPONSIVE LAYOUT WRAPPER
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-6rem)]">
+      {/* SIDEBAR - Only visible on Desktop via CSS inside Sidebar component */}
       <Sidebar />
 
-      {/* Background Effects */}
+      {/* BACKGROUND */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute w-[600px] h-[600px] bg-purple-600/20 blur-[200px] rounded-full top-10 left-20 animate-pulse"></div>
-        <div className="absolute w-[600px] h-[600px] bg-cyan-500/20 blur-[200px] rounded-full bottom-10 right-10 animate-pulse"></div>
+        <div className="absolute w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-purple-600/20 blur-[100px] md:blur-[200px] rounded-full top-10 left-20 animate-pulse"></div>
+        <div className="absolute w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-cyan-500/20 blur-[100px] md:blur-[200px] rounded-full bottom-10 right-10 animate-pulse"></div>
       </div>
 
-      <div className="ml-64 p-6 w-full min-h-screen relative">
-        {/* Title */}
+      {/* MAIN CONTENT AREA */}
+      {/* Added md:ml-64 to push content when sidebar is visible on desktop */}
+      <div className="w-full md:ml-64 p-4 md:p-6 transition-all flex flex-col">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold mb-5 bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent drop-shadow-lg"
+          className="text-3xl md:text-5xl font-extrabold mb-5 bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent text-center md:text-left"
         >
           Chat Assistant 💬
         </motion.h1>
@@ -98,11 +92,7 @@ export default function Assistant() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="
-            bg-gray-900/60 backdrop-blur-xl 
-            p-4 rounded-2xl h-[65vh] 
-            overflow-y-auto border border-gray-700 
-            shadow-2xl"
+          className="bg-gray-900/60 p-4 rounded-2xl h-[60vh] md:h-[65vh] overflow-y-auto border border-gray-700 shadow-2xl mb-4"
           ref={chatRef}
         >
           {messages.map((m, i) => (
@@ -115,10 +105,10 @@ export default function Assistant() {
               }`}
             >
               <div
-                className={`px-4 py-3 rounded-2xl max-w-[75%] text-sm shadow-lg ${
+                className={`px-4 py-3 rounded-2xl max-w-[85%] md:max-w-[75%] text-sm shadow-lg ${
                   m.role === "user"
-                    ? "bg-gradient-to-r from-purple-600 to-purple-400 text-white"
-                    : "bg-gray-800 text-gray-200 border border-gray-700"
+                    ? "bg-purple-600 text-white"
+                    : "bg-gray-800 text-gray-200"
                 }`}
               >
                 {m.text}
@@ -126,41 +116,38 @@ export default function Assistant() {
             </motion.div>
           ))}
 
-          {/* Typing Animation */}
           {loading && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex justify-start my-3"
+              className="flex my-3"
             >
-              <div className="px-4 py-3 rounded-2xl bg-gray-700 text-gray-300 shadow-lg flex gap-2">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300"></span>
+              <div className="px-4 py-3 bg-gray-700 text-gray-300 rounded-2xl flex gap-2">
+                <span className="w-2 h-2 rounded-full animate-bounce bg-gray-400"></span>
+                <span className="w-2 h-2 rounded-full animate-bounce delay-150 bg-gray-400"></span>
+                <span className="w-2 h-2 rounded-full animate-bounce delay-300 bg-gray-400"></span>
               </div>
             </motion.div>
           )}
         </motion.div>
 
-        {/* Input Box */}
+        {/* Input */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex mt-5"
+          className="flex gap-2"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="Ask anything..."
-            className="flex-grow bg-gray-800/80 text-white p-4 rounded-l-2xl border border-gray-700 focus:ring-2 focus:ring-cyan-400 outline-none transition"
+            placeholder="Ask something..."
+            className="flex-grow bg-gray-800 text-white p-4 rounded-xl border border-gray-700 w-full"
           />
+
           <button
             onClick={send}
-            className="
-              bg-gradient-to-r from-cyan-400 to-purple-500
-              hover:opacity-90 text-black font-bold px-8 
-              rounded-r-2xl transition-all active:scale-95"
+            className="bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-bold px-6 md:px-8 rounded-xl shrink-0"
           >
             Send
           </button>

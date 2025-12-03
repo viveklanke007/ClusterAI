@@ -1,16 +1,19 @@
-// models/History.js
 import mongoose from "mongoose";
 
 const historySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+
+  // text / image / audio / video / assistant
   type: {
     type: String,
-    enum: ["text", "image", "audio", "video"],
+    enum: ["text", "image", "audio", "video", "assistant"],
     required: true,
   },
+
   prompt: { type: String },
-  output: { type: String }, // URL or text
-  meta: { type: Object }, // optional: durations, sizes, etc.
+  output: { type: String },
+  meta: { type: Object, default: {} },
+
   createdAt: { type: Date, default: Date.now },
 });
 

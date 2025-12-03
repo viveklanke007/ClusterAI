@@ -9,7 +9,7 @@ export async function POST(req) {
     }
 
     // Keep API key secure
-    const apiKey = "2aa006ae63e9404c8e18bad5776cbe47";
+    const apiKey = process.env.VOICE_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "VoiceRSS API key missing in environment" },
