@@ -7,15 +7,22 @@ import { motion } from "framer-motion";
 export default function ImageTool() {
   const [prompt, setPrompt] = useState("");
   const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [generating, setGenerating] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
 
   const gen = async () => {
     if (!prompt.trim()) return;
 
-    setLoading(true);
+    setGenerating(true);
+    setImageReady(false);
+    setImageLoading(true);
+
     const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(
       prompt
     )}`;
+
     setUrl(imgUrl);
 
     await fetch("/api/history/add", {
@@ -29,7 +36,7 @@ export default function ImageTool() {
       }),
     });
 
-    setLoading(false);
+    setGenerating(false);
   };
 
   const handleKeyDown = (e) => {
@@ -47,7 +54,7 @@ export default function ImageTool() {
       link.href = URL.createObjectURL(blob);
       link.download = `ai-image-${Date.now()}.png`;
       link.click();
-    } catch (err) {
+    } catch {
       alert("Download failed. Try again.");
     }
   };
@@ -59,9 +66,9 @@ export default function ImageTool() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-4 md:p-6 w-full md:ml-64 transition-all"
+        className="p-4 md:p-6 w-full md:ml-64"
       >
-        <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyan-400 to-purple-400 text-transparent bg-clip-text text-center md:text-left">
+        <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyan-400 to-purple-400 text-transparent bg-clip-text">
           🎨 Image Generator
         </h1>
 
@@ -75,30 +82,55 @@ export default function ImageTool() {
 
         <button
           onClick={gen}
-          disabled={loading}
-          className={`w-full md:w-auto px-6 py-3 rounded-xl text-black font-semibold transition-all ${
-            loading
+          disabled={generating}
+          className={`px-6 py-3 rounded-xl text-black font-semibold transition-all ${
+            generating
               ? "bg-gray-600 cursor-not-allowed"
               : "bg-cyan-400 hover:bg-cyan-300 active:scale-95"
           }`}
         >
-          {loading ? "Generating…" : "Generate Image"}
+          {generating ? "Generating…" : "Generate Image"}
         </button>
 
+        {/* IMAGE AREA */}
         {url && (
-          <motion.div className="mt-6 flex flex-col items-center md:items-start">
+          <motion.div className="mt-8 flex flex-col items-center md:items-start">
+            {/* IMAGE LOADING STATE */}
+            {imageLoading && (
+              <div className="w-full md:w-[400px] h-[300px] rounded-xl border border-gray-700 bg-gray-900/60 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-gray-400 text-sm">Generating image…</p>
+                </div>
+              </div>
+            )}
+
+            {/* IMAGE */}
             <img
               src={url}
               alt="Generated"
-              className="rounded-xl shadow-xl border border-gray-700 max-w-full md:max-w-md"
+              onLoad={() => {
+                setImageLoading(false);
+                setImageReady(true);
+              }}
+              onError={() => {
+                setImageLoading(false);
+                alert("Image failed to load. Try again.");
+              }}
+              className={`rounded-xl shadow-xl border border-gray-700 max-w-full md:max-w-md transition-opacity duration-300 ${
+                imageReady ? "opacity-100" : "opacity-0"
+              }`}
             />
 
-            <button
-              onClick={downloadImage}
-              className="mt-4 bg-purple-600 hover:bg-purple-500 px-5 py-2 rounded-lg text-white active:scale-95 w-full md:w-auto"
-            >
-              ⬇ Download Image
-            </button>
+            {/* DOWNLOAD BUTTON (ONLY AFTER IMAGE LOADS) */}
+            {imageReady && (
+              <button
+                onClick={downloadImage}
+                className="mt-4 bg-purple-600 hover:bg-purple-500 px-5 py-2 rounded-lg text-white active:scale-95"
+              >
+                ⬇ Download Image
+              </button>
+            )}
           </motion.div>
         )}
       </motion.div>
